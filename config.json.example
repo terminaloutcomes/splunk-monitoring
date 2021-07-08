@@ -1,0 +1,6 @@
+{
+	"hec_host": "hec.example.com",
+	"hec_token": "your magical token",
+	"hec_index": "monitoring",
+	"hec_sourcetype" : "monitoring:watchdog"
+}
