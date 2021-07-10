@@ -18,4 +18,5 @@ jobs:
       with:
         artifacts: "release.tar"
         token: ${{ secrets.GITHUB_TOKEN }}
+        commit: ${GITHUB_SHA::8}
         # tag: latest
