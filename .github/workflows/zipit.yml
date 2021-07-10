@@ -12,7 +12,7 @@ jobs:
         type: tar
         #exclusions: '*.git* /*node_modules/* .editorconfig'
         exclusions: '*.tar'
-        directory: ./scripts
+        path: ./scripts
     - name: Upload Release
       uses: ncipollo/release-action@v1
       with:
