@@ -40,7 +40,7 @@ except urllib.error.HTTPError as error_message:
     print(error_message.hdrs)
     print(error_message.headers)
     sys.exit()
-response_data = loads(response.read())
-if response_data.get('text') != "Success" or response_data.get('code', False) == 0:
-    print(response_data)
-    sys.exit(1)
+#response_data = loads(response.read())
+#if response_data.get('text') != "Success" or response_data.get('code', False) == 0:
+#    print(response_data)
+#    sys.exit(1)
