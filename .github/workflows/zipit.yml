@@ -11,6 +11,7 @@ jobs:
         filename: 'release.tar'
         type: tar
         #exclusions: '*.git* /*node_modules/* .editorconfig'
+        exclusions: '*.tar'
         directory: ./scripts
     - name: Upload Release
       uses: ncipollo/release-action@v1
