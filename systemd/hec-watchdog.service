@@ -1,0 +1,12 @@
+[Unit]
+Description=HEC Watchdog Checkin
+After=network.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=hec-watchdog.py
+WorkingDirectory=/opt/splunk-monitoring/
+
+[Install]
+WantedBy=multi-user.target

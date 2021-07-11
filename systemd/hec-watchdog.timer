@@ -1,0 +1,10 @@
+[Unit]
+Description=Runs HEC Watchdog
+
+[Timer]
+OnBootSec=1m
+OnUnitActiveSec=1m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
