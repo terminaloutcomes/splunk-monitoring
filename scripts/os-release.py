@@ -6,7 +6,7 @@
 import os
 from json import dumps
 import sys
-from socket import getfqdn
+from socket import gethostname
 import time
 import urllib.request
 import urllib.error
@@ -36,7 +36,7 @@ for line in lines:
 
 params = {
     "time": time.time(),
-    "host": getfqdn(),
+    "host": gethostname(),
     "index": config.get("hec_index"),
     "sourcetype": config.get("hec_sourcetype_os_release", "monitoring:osrelease"),
     "event": data,
