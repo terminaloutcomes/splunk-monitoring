@@ -46,6 +46,8 @@ params = {
 
 # json is good
 payload = dumps(params).encode("utf8")
+if '--debug' in sys.argv:
+    print(payload)
 
 # build the request
 req = urllib.request.Request(url=url, data=payload)
@@ -54,7 +56,7 @@ req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 try:
     response = urllib.request.urlopen(req)
     if '--debug' in sys.argv:
-        print(response)
+        print(response.read())
 except urllib.error.HTTPError as error_message:
     print(f"HTTPError raised: {error_message}", file=sys.stderr)
     print(dir(error_message), file=sys.stderr)
