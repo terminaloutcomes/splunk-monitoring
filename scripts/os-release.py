@@ -54,7 +54,7 @@ req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 try:
     response = urllib.request.urlopen(req)
     if '--debug' in sys.argv:
-        print(response.data)
+        print(response)
 except urllib.error.HTTPError as error_message:
     print(f"HTTPError raised: {error_message}", file=sys.stderr)
     print(dir(error_message), file=sys.stderr)
