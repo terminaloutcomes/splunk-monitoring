@@ -17,6 +17,13 @@ def config_loader():
     """ find and load the config, returns a dict of config """
     for config_file in CONFIG_FILES:
         if os.path.exists(config_file):
-            return json.load(open(config_file, 'r'))
+            with open(config_file, 'r') as filehandle:
+                return json.load(filehandle)
 
     sys.exit("Failed to find config file, quitting")
+
+def url(config):
+    """ makes a url """
+    return (
+        f"https://{config.get('hec_host')}:{config.get('hec_port', 443)}/services/collector"
+    )

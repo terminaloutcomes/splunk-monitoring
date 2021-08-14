@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
+#pylint: disable=invalid-name
 
 """ sends the os-release information to splunk """
 
 import os
 from json import dumps
 import sys
-from socket import gethostname
+from socket import getfqdn
 import time
 import urllib.request
 import urllib.error
 
-from utils import config_loader
+from utils import config_loader, url
 
 config = config_loader()
 
-url = (
-    f"https://{config.get('hec_host')}:{config.get('hec_port', 443)}/services/collector"
-)
 
 # get the data
 if not os.path.exists("/etc/os-release"):
-    print(f"Can't find /etc/os-release, quitting.", file=sys.stderr)
+    print("Can't find /etc/os-release, quitting.", file=sys.stderr)
     sys.exit(1)
 
 with open("/etc/os-release", "r") as file_handle:
@@ -38,7 +36,7 @@ for line in lines:
 
 params = {
     "time": time.time(),
-    "host": gethostname(),
+    "host": getfqdn(),
     "index": config.get("hec_index"),
     "sourcetype": config.get("hec_sourcetype_os_release", "monitoring:osrelease"),
     "event": data,
@@ -50,13 +48,13 @@ if '--debug' in sys.argv:
     print(payload)
 
 # build the request
-req = urllib.request.Request(url=url, data=payload)
+req = urllib.request.Request(url=url(config), data=payload)
 req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 
 try:
-    response = urllib.request.urlopen(req)
-    if '--debug' in sys.argv:
-        print(response.read())
+    with urllib.request.urlopen(req) as response:
+        if '--debug' in sys.argv:
+            print(response.read())
 except urllib.error.HTTPError as error_message:
     print(f"HTTPError raised: {error_message}", file=sys.stderr)
     print(dir(error_message), file=sys.stderr)

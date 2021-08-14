@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
+#pylint: disable=invalid-name
 
 """ sends a ping to splunk to say hello """
 
-from json import dumps, loads
+from json import dumps
 import sys
-from socket import gethostname
+from socket import getfqdn
 import time
 import urllib.request
 import urllib.error
 
-from utils import config_loader
+from utils import config_loader, url
 
 config = config_loader()
 
-url = (
-    f"https://{config.get('hec_host')}:{config.get('hec_port', 443)}/services/collector"
-)
-
 params = {
     "time": time.time(),
-    "host": gethostname(),
+    "host": getfqdn(),
     "index": config.get("hec_index"),
     "sourcetype": config.get("hec_sourcetype", "monitoring:watchdog"),
     "event": "ping",
@@ -29,11 +26,12 @@ params = {
 data = dumps(params).encode("utf8")
 
 # build the request
-req = urllib.request.Request(url=url, data=data)
+req = urllib.request.Request(url=url(config), data=data)
 req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 
 try:
-    response = urllib.request.urlopen(req)
+    # pylint: disable=consider-using-with
+    urllib.request.urlopen(req)
 except urllib.error.HTTPError as error_message:
     print(f"HTTPError raised: {error_message}")
     print(dir(error_message))
