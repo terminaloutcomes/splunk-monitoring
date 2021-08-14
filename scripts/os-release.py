@@ -40,8 +40,8 @@ params = {
     "time": time.time(),
     "host": gethostname(),
     "index": config.get("hec_index"),
-    "sourcetype": config.get("hec_sourcetype", "monitoring:osrelease"),
-    "event": dumps(data),
+    "sourcetype": config.get("hec_sourcetype_os_release", "monitoring:osrelease"),
+    "event": data,
 }
 
 # json is good
