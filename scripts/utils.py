@@ -20,7 +20,7 @@ def config_loader():
             with open(config_file, 'r') as filehandle:
                 return json.load(filehandle)
 
-    sys.exit("Failed to find config file, quitting")
+    sys.exit(f"Failed to find config file, quitting (tried: {CONFIG_FILES}")
 
 def url(config):
     """ makes a url """

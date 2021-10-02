@@ -5,7 +5,7 @@
 
 from json import dumps
 import sys
-from socket import gethostname
+from socket import gethostname, timeout
 import time
 import urllib.request
 import urllib.error
@@ -13,6 +13,8 @@ import urllib.error
 from utils import config_loader, url
 
 config = config_loader()
+
+http_timeout = config.get('http_timeout', 5)
 
 params = {
     "time": time.time(),
@@ -31,14 +33,11 @@ req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 
 try:
     # pylint: disable=consider-using-with
-    urllib.request.urlopen(req)
+    urllib.request.urlopen(req, timeout=http_timeout)
 except urllib.error.HTTPError as error_message:
     print(f"HTTPError raised: {error_message}")
-    print(dir(error_message))
     print(error_message.hdrs)
     print(error_message.headers)
-    sys.exit()
-#response_data = loads(response.read())
-#if response_data.get('text') != "Success" or response_data.get('code', False) == 0:
-#    print(response_data)
-#    sys.exit(1)
+except timeout as error_message:
+    print(f"Timeout connecting to {url(config)}")
+
