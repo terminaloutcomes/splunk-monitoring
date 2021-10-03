@@ -10,7 +10,6 @@
 
 SCRIPT_DIR=$(dirname "$0")
 
-echo "Running from ${SCRIPT_DIR}"
 
 RESULT=$("$SCRIPT_DIR/loghandler.py" --mins 15 --ignore_mins 5 \
     --component HttpInputDataHandler \
@@ -18,5 +17,7 @@ RESULT=$("$SCRIPT_DIR/loghandler.py" --mins 15 --ignore_mins 5 \
     --count)
 if [ "$RESULT" -gt 50 ]; then
     echo "Restarting Splunkd, found ${RESULT} recent server busy events."
-    #/bin/systemctl restart Splunkd
+    /bin/systemctl restart Splunkd
+else
+    echo "Result: ${RESULT}"
 fi
