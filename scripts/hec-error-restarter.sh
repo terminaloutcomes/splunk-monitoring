@@ -18,6 +18,4 @@ RESULT=$("$SCRIPT_DIR/loghandler.py" --mins 15 --ignore_mins 5 \
 if [ "$RESULT" -gt 50 ]; then
     echo "Restarting Splunkd, found ${RESULT} recent server busy events."
     /bin/systemctl restart Splunkd
-else
-    echo "Result: ${RESULT}"
 fi
