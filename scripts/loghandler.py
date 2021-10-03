@@ -38,22 +38,25 @@ def regex_kv_pairs(text, item_sep=r"\s", value_sep="="):
 regex = re.compile(r"^(?P<timestamp>(?P<date>\S+) (?P<time_hour>\d+):(?P<time_minute>\d+):(?P<time_second>[\d\.]+) (?P<time_zone_offset>\S+)) (?P<log_level>\w+)\s+(?P<component>\S+)\s+(?P<event>.*)")
 
 @click.command()
-@click.option('--mins', default=5)
+@click.option('--mins', default=5, help="Look back this many minutes")
+@click.option('--ignore_mins', default=0, help="Ignore the last x minutes")
 @click.option('--component')
 @click.option('--debug', is_flag=True)
 @click.option('--count', is_flag=True)
 @click.option('--json', is_flag=True)
 @click.option('--filename', type=click.File('r'), default=False)
-def cli(mins, component, debug, count, filename, json):
+def cli(mins, component, debug, count, filename, json, ignore_mins):
     """ Splunk log parser, either pipe splunkd.log into it or pass --filename and you can look for things.
 
 Example:
 
-./scripts/log-handler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk/var/log/splunk/splunkd.log --count
+loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk/var/log/splunk/splunkd.log --count
 
     """
     # events after this are what we want
     min_time = datetime.now() - timedelta(minutes=mins)
+    # if we want to ignore the last five minutes (for example, for startup reasons), then we set that
+    max_time = datetime.now() - timedelta(minutes=ignore_mins)
 
     result_events = []
 
@@ -91,6 +94,12 @@ Example:
                 '%m-%d-%Y %H:%M:%S.%f %z'
             )
             if line_timestamp < min_time.astimezone():
+                if debug:
+                    print("Before mins window, skipping", file=sys.stderr)
+                continue
+            if line_timestamp > max_time.astimezone():
+                if debug:
+                    print(f"Inside ignore_time window, skipping {line_timestamp}", file=sys.stderr)
                 continue
 
             parsed = regex_kv_pairs(event)
