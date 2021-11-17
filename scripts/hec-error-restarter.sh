@@ -15,7 +15,7 @@ RESULT=$("$SCRIPT_DIR/loghandler.py" --mins 15 --ignore_mins 5 \
     --component HttpInputDataHandler \
     --filename /opt/splunk/var/log/splunk/splunkd.log \
     --count)
-if [ "$RESULT" -gt 50 ]; then
+if [ "$RESULT" -gt 500 ]; then
     echo "Restarting Splunkd, found ${RESULT} recent server busy events."
     /bin/systemctl restart Splunkd
 fi
