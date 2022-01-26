@@ -45,7 +45,7 @@ regex = re.compile(r"^(?P<timestamp>(?P<date>\S+) (?P<time_hour>\d+):(?P<time_mi
 @click.option('--count', is_flag=True)
 @click.option('--json', is_flag=True)
 @click.option('--filename', type=click.File('r'), default=False)
-def cli(mins, component, debug, count, filename, json, ignore_mins):
+def cli(mins, component, debug, count, filename, json, **kwargs):
     """ Splunk log parser, either pipe splunkd.log into it or pass --filename and you can look for things.
 
 Example:
@@ -56,7 +56,7 @@ loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk
     # events after this are what we want
     min_time = datetime.now() - timedelta(minutes=mins)
     # if we want to ignore the last five minutes (for example, for startup reasons), then we set that
-    max_time = datetime.now() - timedelta(minutes=ignore_mins)
+    max_time = datetime.now() - timedelta(minutes=kwargs["ignore_mins"])
 
     result_events = []
 
