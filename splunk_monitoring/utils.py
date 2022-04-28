@@ -6,7 +6,7 @@ copyright James Hodgkinson 2021
 
 import json
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, TypedDict, Union
 from pathlib import Path
 
 import urllib.request
@@ -19,25 +19,32 @@ CONFIG_FILES = [
     "./config.json"
 ]
 
-def config_loader() -> Dict:
+ConfigFileType = Dict[str, Union[str, int]]
+
+def config_loader() -> ConfigFileType:
     """ find and load the config, returns a dict of config """
     for config_file in CONFIG_FILES:
         filepath = Path(config_file)
         if filepath.exists():
             with filepath.open(encoding="utf8") as filehandle:
-                return json.load(filehandle)
+                result: Dict[str, Union[str, int]] = json.load(filehandle)
+                return result
+
 
     sys.exit(f"Failed to find config file, quitting (tried: {CONFIG_FILES}")
 
-def url(config):
+def url(config: ConfigFileType) -> str:
     """ makes a url """
+    if "hec_host" not in config:
+        raise ValueError("hec_host missing in config file")
+
     return (
-        f"https://{config.get('hec_host')}:{config.get('hec_port', 443)}/services/collector"
+        f"https://{config['hec_host']}:{config.get('hec_port', 443)}/services/collector"
     )
 
 
 
-def send_hec(config: Dict[str, Any], payload: Dict[str, Any]):
+def send_hec(config: ConfigFileType, payload: Dict[str, Any]) -> None:
     """ sends a thing to the HEC endpoint """
 
     data = json.dumps(payload, default=str, ensure_ascii=False).encode("utf-8")

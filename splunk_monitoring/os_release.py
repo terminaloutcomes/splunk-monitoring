@@ -13,7 +13,7 @@ from typing import Any, Dict
 from .utils import config_loader, send_hec
 
 
-def cli():
+def cli() -> None:
     """CLI Interface"""
     config = config_loader()
 

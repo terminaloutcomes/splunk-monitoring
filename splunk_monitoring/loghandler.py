@@ -2,16 +2,17 @@
 
 """ Splunk log parser, you can filter by component, time etc. """
 
-import sys
-from json import dumps
-import re
 from datetime import datetime, timedelta
+from io import TextIOWrapper
+from json import dumps
 from pathlib import Path
-from typing import Optional
+import re
+import sys
+from typing import Any, Dict, Optional
 
 import click
 
-def regex_kv_pairs(text, item_sep=r"\s", value_sep="="):
+def regex_kv_pairs(text: str, item_sep: str=r"\s", value_sep: str="=") -> Dict[str, Any]:
     """
     Parse key-value pairs from a shell-like text with regex.
     This approach is ~ 25 times faster than the shlex approach.
@@ -53,7 +54,7 @@ def cli(
     filename: Optional[str]=None,
     json: bool=False,
     # **kwargs, Dict[str, Any],
-    ):
+    ) -> None:
     """ Splunk log parser, either pipe splunkd.log into it or pass --filename and you can look for things.
 
 Example:
@@ -71,7 +72,7 @@ loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk
     if filename is not None:
         input_handle = Path(filename).open("r", encoding="utf-8")
     else:
-        input_handle = sys.stdin
+        input_handle = TextIOWrapper(sys.stdin.buffer)
 
     for line in input_handle:
         result = regex.match(line)

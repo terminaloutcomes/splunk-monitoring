@@ -9,12 +9,12 @@ import time
 from typing import Dict, List, Optional, Union
 
 import click
-import schedule
+import schedule # type: ignore
 
-from .utils import config_loader, send_hec
+from .utils import config_loader, send_hec, ConfigFileType
 
 
-def check_config(config_dict: Dict[str, str]) -> None:
+def check_config(config_dict: ConfigFileType) -> None:
     """ checks config options """
     missing_options: List[str] = []
     for key in [
@@ -28,7 +28,7 @@ def check_config(config_dict: Dict[str, str]) -> None:
     if missing_options:
         raise ValueError(f"The following keys are missing from the config: {','.join(missing_options)}")
 
-def send_ping(config_dict: Dict[str, str]):
+def send_ping(config_dict: ConfigFileType) -> None:
     """ does the sendy bit"""
 
 
@@ -47,8 +47,8 @@ def send_ping(config_dict: Dict[str, str]):
         print("pong")
 
 def loop(
-    config_dict: Dict[str,Union[int, str]],
-    ):
+    config_dict: ConfigFileType,
+    ) -> None:
     """ loops and tings """
     schedule.every(config_dict["seconds"]).seconds.do(
         send_ping,
@@ -65,12 +65,16 @@ def loop(
 @click.option("--daemon", is_flag=True, default=False, help="Runs on a loop")
 @click.option("--seconds", "-s", type=int, help="If in daemon mode, how many seconds between runs. Can be specified in config as 'seconds' which this overrides, default is 300.")
 @click.option("--print-ping", "-p", is_flag=True, help="Prints ping/pong when sending/succesfully sent.")
-def cli(daemon: bool, seconds: Optional[int], print_ping: bool):
+def cli(
+    daemon: bool=False,
+    seconds: Optional[int]=None,
+    print_ping: bool=False,
+    ) -> None:
     """ Sends a ping to your Splunk instance over the HTTP Event Collector to say hello. """
     config = config_loader()
     check_config(config)
 
-    if seconds:
+    if seconds is not None:
         config["seconds"] = seconds
     elif "seconds" not in config:
         config["seconds"] = 300
