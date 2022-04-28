@@ -11,6 +11,9 @@ import sys
 from typing import Any, Dict, Optional
 
 import click
+from loguru import logger
+
+from .utils import setup_logging
 
 def regex_kv_pairs(text: str, item_sep: str=r"\s", value_sep: str="=") -> Dict[str, Any]:
     """
@@ -62,6 +65,7 @@ Example:
 loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk/var/log/splunk/splunkd.log --count
 
     """
+    setup_logging(debug)
     # events after this are what we want
     min_time = datetime.now() - timedelta(minutes=mins)
     # if we want to ignore the last five minutes (for example, for startup reasons), then we set that
@@ -77,43 +81,35 @@ loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk
     for line in input_handle:
         result = regex.match(line)
         if not result:
-            print(f"Failed to parse line: {line}")
+            logger.error("Failed to parse line: {}", line)
             continue
 
 
-        data = result.groupdict()
+        data: Dict[str, Any] = result.groupdict()
         if component:
             if not data.get('component') == component:
-                if debug:
-                    print(f"component skip {line}")
+                logger.debug("component skip {}", line)
                 continue
 
-
-        event = data.get('event')
-
-
-        if not event:
-            if debug:
-                print("Couldn't find event?", file=sys.stderr)
+        if "event" not in data:
+            logger.debug("Couldn't find event?")
             continue
+        event = data['event']
         #print(data.get('timestamp'))
         line_timestamp = datetime.strptime(
             data['timestamp'],
             '%m-%d-%Y %H:%M:%S.%f %z'
         )
         if line_timestamp < min_time.astimezone():
-            if debug:
-                print("Before mins window, skipping", file=sys.stderr)
+            logger.debug("Before mins window, skipping")
             continue
         if line_timestamp > max_time.astimezone():
-            if debug:
-                print(f"Inside ignore_time window, skipping {line_timestamp}", file=sys.stderr)
+            logger.debug("Inside ignore_time window, skipping {}", line_timestamp)
             continue
 
         parsed = regex_kv_pairs(event)
         if not parsed:
-            if debug:
-                print(f"Couldn't kv parse line, skipping: {line}", file=sys.stderr)
+            logger.debug("Couldn't kv parse line, skipping: {}", line)
             continue
         data['event_parsed'] = regex_kv_pairs(event)
         # print(f"event: {json.dumps(regex_kv_pairs(event), indent=4)}")

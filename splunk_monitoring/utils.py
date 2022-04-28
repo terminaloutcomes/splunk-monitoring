@@ -6,12 +6,12 @@ copyright James Hodgkinson 2021
 
 import json
 import sys
-from typing import Any, Dict, TypedDict, Union
+from typing import Any, Dict, Union
 from pathlib import Path
 
 import urllib.request
 import urllib.error
-
+from loguru import logger
 
 CONFIG_FILES = [
     "/etc/splunk-monitoring/config.json",
@@ -62,3 +62,9 @@ def send_hec(config: ConfigFileType, payload: Dict[str, Any]) -> None:
         if hasattr(error_message, "headers"):
             print(error_message.headers, file=sys.stderr)
         sys.exit(1)
+
+def setup_logging(debug: bool=False) -> None:
+    """ sets up loguru """
+    if not debug:
+        logger.remove()
+        logger.add(sink=sys.stderr, level="INFO")

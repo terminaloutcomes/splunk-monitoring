@@ -6,12 +6,12 @@
 import sys
 from socket import gethostname
 import time
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 
 import click
 import schedule # type: ignore
 
-from .utils import config_loader, send_hec, ConfigFileType
+from .utils import config_loader, send_hec, ConfigFileType, setup_logging
 
 
 def check_config(config_dict: ConfigFileType) -> None:
@@ -63,14 +63,17 @@ def loop(
 
 @click.command()
 @click.option("--daemon", is_flag=True, default=False, help="Runs on a loop")
+@click.option("--debug", is_flag=True, default=False, help="Turn on debug logging")
 @click.option("--seconds", "-s", type=int, help="If in daemon mode, how many seconds between runs. Can be specified in config as 'seconds' which this overrides, default is 300.")
 @click.option("--print-ping", "-p", is_flag=True, help="Prints ping/pong when sending/succesfully sent.")
 def cli(
     daemon: bool=False,
     seconds: Optional[int]=None,
     print_ping: bool=False,
+    debug: bool=False,
     ) -> None:
     """ Sends a ping to your Splunk instance over the HTTP Event Collector to say hello. """
+    setup_logging(debug)
     config = config_loader()
     check_config(config)
 
