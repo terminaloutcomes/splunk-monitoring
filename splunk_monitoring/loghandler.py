@@ -6,12 +6,10 @@ import sys
 from json import dumps
 import re
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Optional
 
-try:
-    import click
-except ImportError:
-    print("Please install the click library: python3 -m pip install click", file=sys.stderr)
-    sys.exit(1)
+import click
 
 def regex_kv_pairs(text, item_sep=r"\s", value_sep="="):
     """
@@ -37,15 +35,25 @@ def regex_kv_pairs(text, item_sep=r"\s", value_sep="="):
 # pylint: disable=line-too-long
 regex = re.compile(r"^(?P<timestamp>(?P<date>\S+) (?P<time_hour>\d+):(?P<time_minute>\d+):(?P<time_second>[\d\.]+) (?P<time_zone_offset>\S+)) (?P<log_level>\w+)\s+(?P<component>\S+)\s+(?P<event>.*)")
 
+#pylint: disable=too-many-arguments,too-many-locals,too-many-branches
 @click.command()
 @click.option('--mins', default=5, help="Look back this many minutes")
 @click.option('--ignore_mins', default=0, help="Ignore the last x minutes")
 @click.option('--component')
-@click.option('--debug', is_flag=True)
-@click.option('--count', is_flag=True)
-@click.option('--json', is_flag=True)
+@click.option('--debug', is_flag=True, default=False)
+@click.option('--count', is_flag=True, default=False)
+@click.option('--json', is_flag=True, default=False)
 @click.option('--filename', type=click.File('r'), default=False)
-def cli(mins, component, debug, count, filename, json, **kwargs):
+def cli(
+    mins: int=5,
+    ignore_mins: int=0,
+    component: Optional[str]=None,
+    debug: bool=False,
+    count: bool=False,
+    filename: Optional[str]=None,
+    json: bool=False,
+    # **kwargs, Dict[str, Any],
+    ):
     """ Splunk log parser, either pipe splunkd.log into it or pass --filename and you can look for things.
 
 Example:
@@ -56,12 +64,12 @@ loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk
     # events after this are what we want
     min_time = datetime.now() - timedelta(minutes=mins)
     # if we want to ignore the last five minutes (for example, for startup reasons), then we set that
-    max_time = datetime.now() - timedelta(minutes=kwargs["ignore_mins"])
+    max_time = datetime.now() - timedelta(minutes=ignore_mins)
 
     result_events = []
 
-    if filename:
-        input_handle = filename
+    if filename is not None:
+        input_handle = Path(filename).open("r", encoding="utf-8")
     else:
         input_handle = sys.stdin
 
@@ -87,37 +95,36 @@ loghandler.py --mins 180 --component HttpInputDataHandler --filename /opt/splunk
             if debug:
                 print("Couldn't find event?", file=sys.stderr)
             continue
-        else:
-            #print(data.get('timestamp'))
-            line_timestamp = datetime.strptime(
-                data.get('timestamp'),
-                '%m-%d-%Y %H:%M:%S.%f %z'
-            )
-            if line_timestamp < min_time.astimezone():
-                if debug:
-                    print("Before mins window, skipping", file=sys.stderr)
-                continue
-            if line_timestamp > max_time.astimezone():
-                if debug:
-                    print(f"Inside ignore_time window, skipping {line_timestamp}", file=sys.stderr)
-                continue
+        #print(data.get('timestamp'))
+        line_timestamp = datetime.strptime(
+            data['timestamp'],
+            '%m-%d-%Y %H:%M:%S.%f %z'
+        )
+        if line_timestamp < min_time.astimezone():
+            if debug:
+                print("Before mins window, skipping", file=sys.stderr)
+            continue
+        if line_timestamp > max_time.astimezone():
+            if debug:
+                print(f"Inside ignore_time window, skipping {line_timestamp}", file=sys.stderr)
+            continue
 
-            parsed = regex_kv_pairs(event)
-            if not parsed:
-                if debug:
-                    print(f"Couldn't kv parse line, skipping: {line}", file=sys.stderr)
-                continue
-            data['event_parsed'] = regex_kv_pairs(event)
-            # print(f"event: {json.dumps(regex_kv_pairs(event), indent=4)}")
-            result_events.append(data)
+        parsed = regex_kv_pairs(event)
+        if not parsed:
+            if debug:
+                print(f"Couldn't kv parse line, skipping: {line}", file=sys.stderr)
+            continue
+        data['event_parsed'] = regex_kv_pairs(event)
+        # print(f"event: {json.dumps(regex_kv_pairs(event), indent=4)}")
+        result_events.append(data)
     if count:
         print(len(result_events), end='')
     elif result_events:
         if json:
             print(dumps(result_events))
         else:
-            for event in result_events:
-                print(event)
+            for result_event in result_events:
+                print(result_event)
 
 if __name__ == '__main__':
     # pylint: disable=no-value-for-parameter
