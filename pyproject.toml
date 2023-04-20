@@ -26,3 +26,7 @@ build-backend = "poetry.core.masonry.api"
 "splunk-hec-watchdog" = 'splunk_monitoring.hec_watchdog:cli'
 "splunk-os-release" = 'splunk_monitoring.os_release:cli'
 "splunk-log-handler" = 'splunk_monitoring.loghandler:cli'
+
+
+[tool.mypy]
+plugins = "pydantic.mypy"

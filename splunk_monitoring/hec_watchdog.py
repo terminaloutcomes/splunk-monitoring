@@ -50,7 +50,7 @@ def loop(
     config_dict: ConfigFileType,
     ) -> None:
     """ loops and tings """
-    schedule.every(config_dict["seconds"]).seconds.do(
+    schedule.every(int(config_dict["seconds"])).seconds.do(
         send_ping,
         config_dict=config_dict,
         )
