@@ -9,7 +9,7 @@ import time
 from typing import List, Optional
 
 import click
-import schedule
+from schedule import run_pending, every
 
 from .utils import config_loader, send_hec, ConfigFileType, setup_logging
 
@@ -62,13 +62,13 @@ def send_ping(config_dict: ConfigFileType, debug: bool = False) -> None:
 
 def loop(config_dict: ConfigFileType) -> None:
     """loops and tings"""
-    schedule.every(int(config_dict["seconds"])).seconds.do(
+    every(int(config_dict["seconds"])).seconds.do(
         send_ping,
         config_dict=config_dict,
     )
     try:
         while True:
-            schedule.run_pending()
+            run_pending()
             time.sleep(1)
     except KeyboardInterrupt:
         sys.exit()
