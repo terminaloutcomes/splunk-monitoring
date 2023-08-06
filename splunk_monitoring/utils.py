@@ -16,13 +16,14 @@ from loguru import logger
 CONFIG_FILES = [
     "/etc/splunk-monitoring/config.json",
     "~/.config/splunk-monitoring.json",
-    "./config.json"
+    "./config.json",
 ]
 
 ConfigFileType = Dict[str, Union[str, int]]
 
+
 def config_loader() -> ConfigFileType:
-    """ find and load the config, returns a dict of config """
+    """find and load the config, returns a dict of config"""
     for config_file in CONFIG_FILES:
         filepath = Path(config_file)
         if filepath.exists():
@@ -30,11 +31,11 @@ def config_loader() -> ConfigFileType:
                 result: Dict[str, Union[str, int]] = json.load(filehandle)
                 return result
 
-
     sys.exit(f"Failed to find config file, quitting (tried: {CONFIG_FILES}")
 
+
 def url(config: ConfigFileType) -> str:
-    """ makes a url """
+    """makes a url"""
     if "hec_host" not in config:
         raise ValueError("hec_host missing in config file")
 
@@ -43,9 +44,10 @@ def url(config: ConfigFileType) -> str:
     )
 
 
-
-def send_hec(config: ConfigFileType, payload: Dict[str, Any]) -> None:
-    """ sends a thing to the HEC endpoint """
+def send_hec(
+    config: ConfigFileType, payload: Dict[str, Any], debug: bool = False
+) -> None:
+    """sends a thing to the HEC endpoint"""
 
     data = json.dumps(payload, default=str, ensure_ascii=False).encode("utf-8")
 
@@ -54,17 +56,17 @@ def send_hec(config: ConfigFileType, payload: Dict[str, Any]) -> None:
 
     try:
         with urllib.request.urlopen(req) as response:
-            if '--debug' in sys.argv:
+            if debug:
                 print(response.read())
     except urllib.error.HTTPError as error_message:
         print(f"HTTPError raised: {error_message}", file=sys.stderr)
         print(dir(error_message), file=sys.stderr)
         if hasattr(error_message, "headers"):
             print(error_message.headers, file=sys.stderr)
-        sys.exit(1)
 
-def setup_logging(debug: bool=False) -> None:
-    """ sets up loguru """
+
+def setup_logging(debug: bool = False) -> None:
+    """sets up loguru"""
     if not debug:
         logger.remove()
         logger.add(sink=sys.stderr, level="INFO")
