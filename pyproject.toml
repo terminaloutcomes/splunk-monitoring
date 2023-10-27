@@ -14,7 +14,7 @@ loguru = "^0.7.2"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.13.9"
-pytest = "^7.4.2"
+pytest = "^7.4.3"
 mypy = "^1.4"
 black = "^23.3"
 
