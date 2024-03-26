@@ -14,7 +14,6 @@ loguru = "^0.7.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4"
-pylint = "^2.13.9"
 pytest = "^7.4.4"
 ruff = "^0.3.4"
 
