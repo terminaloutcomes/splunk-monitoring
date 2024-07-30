@@ -11,6 +11,7 @@ from pathlib import Path
 
 import urllib.request
 import urllib.error
+import backoff
 from loguru import logger
 
 CONFIG_FILES = [
@@ -44,6 +45,7 @@ def url(config: ConfigFileType) -> str:
     )
 
 
+@backoff.on_exception(backoff.expo, (urllib.error.HTTPError, urllib.error.URLError))
 def send_hec(
     config: ConfigFileType, payload: Dict[str, Any], debug: bool = False
 ) -> None:
@@ -54,15 +56,9 @@ def send_hec(
     req = urllib.request.Request(url=url(config), data=data)
     req.add_header("Authorization", f"Splunk {config.get('hec_token')}")
 
-    try:
-        with urllib.request.urlopen(req) as response:
-            if debug:
-                print(response.read())
-    except urllib.error.HTTPError as error_message:
-        print(f"HTTPError raised: {error_message}", file=sys.stderr)
-        print(dir(error_message), file=sys.stderr)
-        if hasattr(error_message, "headers"):
-            print(error_message.headers, file=sys.stderr)
+    with urllib.request.urlopen(req) as response:
+        if debug:
+            print(response.read())
 
 
 def setup_logging(debug: bool = False) -> None:

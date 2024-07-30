@@ -56,6 +56,7 @@ def send_ping(config_dict: ConfigFileType, debug: bool = False) -> None:
         send_hec(config=config_dict, payload=params, debug=debug)
     except Exception as error:  # pylint: disable=broad-except
         print(f"Error sending ping: {error}", file=sys.stderr)
+        return
     if config_dict.get("print_ping"):
         print("pong")
 
